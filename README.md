@@ -19,7 +19,7 @@
 
 2. Build the image: `docker-compose build`
 3. Run in [detached mode](https://docs.docker.com/engine/reference/run/#detached--d): `docker-compose up -d`
-4. Check project: `http://localhost:8004/ping`
+4. Check project: `http://localhost:8004/status-check`
 
 To tear down project: `docker-compose down`
 

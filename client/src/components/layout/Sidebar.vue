@@ -2,10 +2,14 @@
     <nav id="sidebar">
         <div class="container-fluid options">
             <ul class="list-unstyled components">
-                <span :class="[status ? 'connected': 'disconnected']"></span>
+                <span :class="[
+                    status ? 'connected': 'disconnected',
+                ]">
+                </span>
+                <p>Connection Status</p>
                 <hr>
                 <li>
-                    <router-link to="/">Dashboard</router-link> 
+                    <router-link to="/" class="routerlink">Dashboard</router-link> 
                 </li>
             </ul>
         </div>
@@ -14,7 +18,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 export default defineComponent({
     name: "SideBar",
     computed: {
@@ -59,4 +63,5 @@ export default defineComponent({
         border-radius: 50%;
         display: inline-block;
     }
+    a { text-decoration: none; color: white; }
 </style>

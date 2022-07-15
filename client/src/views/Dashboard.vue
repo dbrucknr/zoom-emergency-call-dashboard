@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 import CallDetails from '../components/emergencyCalls/CallDetails.vue';
 
 export default defineComponent({
@@ -20,9 +20,6 @@ export default defineComponent({
     computed: {
         ...mapGetters('serverEvents', {
             events: 'getEvents'
-        }),
-        ...mapState('serverEvents', {
-            storedEvents: 'receivedEvents'
         })
     },
     methods: {

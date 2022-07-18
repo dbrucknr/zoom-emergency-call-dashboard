@@ -1,14 +1,13 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from sse_starlette.sse import EventSourceResponse
 
-import json
-import asyncio
 
-from .config import get_settings, Settings
+from src.routes import dashboard_routes
+from src.config import get_settings, Settings
 
 
 app = FastAPI()
+app.include_router(dashboard_routes.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,55 +16,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-received_calls = []
 
-def get_calls():
+@app.get(
+    "/status-check", 
+    tags=['status'],
+    summary="Check server settings.",
+    description="Provides HTTP GET route to check server settings.",
+    response_description="Current environment settings."
+)
+async def status_check(response: Response, settings: Settings = Depends(get_settings)):
     """
-        Pulls calls out of the received_calls list.
-        Returns a generator object.
+        Server status comes from the config.py file. Settings are extracted 
+        from Environment variables set by admin.
     """
-    for call in received_calls:
-        yield dict(data=call)
-    received_calls.clear()   
-
-
-@app.get("/status-check")
-async def check(settings: Settings = Depends(get_settings)):
-    """
-        Provides a base HTTP route for checking the server status.
-    """
-    return {
-        "environment": settings.environment,
-        "testing": settings.testing
-    }
-
-@app.post("/incoming-call")
-async def call_log_receiver(request: Request):
-    """
-        Endpoint to receive data from web-hook.
-    """
-    data = await request.json()
-    received_calls.append(data)
+    try:
+        response.status_code = status.HTTP_200_OK
+        return {
+            "environment": settings.environment,
+            "testing": settings.testing
+        }
+    except:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {
+            "status": "Server Error"
+        }
 
 
-@app.get("/dashboard")
-async def run(request: Request):
-    """
-        Endpoint for a client to subscribe to. 
-        Emits SSE Events to subscribed client(s).
-    """
-    def new_call():
-        return len(received_calls) > 0
-
-    async def event_generator():
-        while True:
-            if await request.is_disconnected():
-                break
-            if new_call():
-                yield {
-                    "retry": 15000,
-                    "data": json.dumps(*list(get_calls())) if len(received_calls) > 0 else None
-                }
-                await asyncio.sleep(1)
-    return EventSourceResponse(event_generator())
     
